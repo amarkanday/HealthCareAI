@@ -1,7 +1,7 @@
 # Hospital Readmission Prediction & Prevention Framework
 ## Comprehensive Analytics for Reducing 30-Day Readmissions
 
-**Prepared by:** Clinical Analytics & Care Management Team  
+**Prepared by:** Ashish Markanday for educational and demonstration purposes only  
 **Date:** June 29, 2025  
 **Objective:** Develop predictive models to identify patients at high risk for 30-day hospital readmissions and implement evidence-based interventions to prevent them
 
