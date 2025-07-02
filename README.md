@@ -21,6 +21,9 @@ Discover how insurance companies use machine learning to predict high-cost healt
 ### 🤖 [Large Language Models and RAG in Healthcare](llm_and_rag/)
 Comprehensive examination of how Large Language Models (LLMs) and Retrieval-Augmented Generation (RAG) systems are transforming healthcare delivery, enabling clinical decision support, automated documentation, medical knowledge retrieval, and personalized patient care.
 
+### 📈 [Healthcare Provider Performance Models](provider_performance/)
+Advanced analytics for evaluating healthcare provider performance using Data Envelopment Analysis (DEA), Stochastic Frontier Analysis (SFA), and multivariate regression modeling to measure quality, efficiency, and operational excellence across healthcare organizations.
+
 ## Topics Covered
 
 - **Predictive Analytics** in healthcare settings
@@ -30,6 +33,11 @@ Comprehensive examination of how Large Language Models (LLMs) and Retrieval-Augm
 - **Large Language Models** for clinical decision support
 - **Retrieval-Augmented Generation** for medical knowledge access
 - **AI-Powered Documentation** and clinical coding automation
+- **Data Envelopment Analysis (DEA)** for efficiency measurement
+- **Stochastic Frontier Analysis (SFA)** for production frontier estimation
+- **Provider Performance Analytics** and quality assessment
+- **Healthcare Benchmarking** and comparative effectiveness
+- **Operational Excellence** and resource optimization
 - **Care Management** and intervention strategies
 - **Business Impact** and ROI analysis in healthcare AI
 - **Implementation Strategies** for healthcare organizations
