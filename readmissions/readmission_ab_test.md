@@ -1,7 +1,7 @@
 # A/B Testing Framework for Readmission Prevention Interventions
 ## Experimental Design for Optimizing Care Transition Programs
 
-**Prepared by:** Clinical Research & Data Science Team  
+**Prepared by:** Ashish Markanday for educational and demonstration purposes only
 **Date:** June 29, 2025  
 **Objective:** Design and implement rigorous A/B tests to identify the most effective intervention components for preventing hospital readmissions
 

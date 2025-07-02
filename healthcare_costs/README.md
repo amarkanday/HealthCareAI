@@ -6,6 +6,30 @@ This directory contains case studies and resources for understanding how artific
 
 - **[Healthcare Cost Prediction Using Deep Learning](healthcare_cost_prediction.md)** - Comprehensive overview of how health insurers use deep learning models (RNNs/LSTMs) to predict future healthcare costs for risk management and premium pricing
 
+## Implementation
+
+- **[Healthcare Cost Predictor (Python)](healthcare_cost_predictor.py)** - Complete LSTM-based deep learning implementation for healthcare cost prediction
+- **[Requirements](requirements.txt)** - Python dependencies needed to run the implementation
+
+### Running the Implementation
+
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Run the healthcare cost predictor:
+```bash
+python healthcare_cost_predictor.py
+```
+
+The script will:
+- Generate synthetic healthcare data for demonstration
+- Preprocess the data and create LSTM sequences
+- Train a deep learning model to predict healthcare costs
+- Evaluate model performance and visualize predictions
+- Identify high-risk patients based on predicted costs
+
 ## Key Topics Covered
 
 - **Deep Learning Applications:** Recurrent Neural Networks (RNNs) and Long Short-Term Memory (LSTM) networks for time-series healthcare data
