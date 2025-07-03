@@ -1,0 +1,62 @@
+# Patient Segmentation Models - Requirements
+# Core data science and machine learning libraries
+pandas>=1.3.0
+numpy>=1.21.0
+scikit-learn>=1.0.0
+matplotlib>=3.3.0
+seaborn>=0.11.0
+
+# Advanced clustering and dimensionality reduction
+umap-learn>=0.5.0
+hdbscan>=0.8.0
+
+# Additional ML and analytics
+xgboost>=1.4.0
+lightgbm>=3.2.0
+
+# Statistical analysis
+scipy>=1.7.0
+statsmodels>=0.12.0
+
+# Healthcare data standards
+fhir.resources>=6.0.0
+hl7apy>=1.3.0
+
+# Population health analytics
+lifelines>=0.25.0
+pysurvival>=0.1.0
+
+# Data visualization
+plotly>=5.0.0
+dash>=2.0.0
+
+# Database connectivity
+sqlalchemy>=1.4.0
+pymongo>=3.12.0
+
+# Web frameworks (for API development)
+flask>=2.0.0
+fastapi>=0.70.0
+uvicorn>=0.15.0
+
+# Utilities and helpers
+python-dateutil>=2.8.0
+requests>=2.25.0
+pydantic>=1.8.0
+typing-extensions>=3.10.0
+
+# Risk scoring and clinical algorithms
+clinical-risk-models>=0.1.0
+healthcare-analytics>=0.2.0
+
+# Testing and development
+pytest>=6.2.0
+pytest-cov>=2.12.0
+
+# Jupyter notebook support (optional)
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# Documentation
+sphinx>=4.0.0
+sphinx-rtd-theme>=0.5.0 
