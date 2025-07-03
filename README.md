@@ -30,6 +30,9 @@ Comprehensive machine learning framework for predicting clinical outcomes and tr
 ### 🧬 [Patient Segmentation Models](patient_segmentation/)
 Advanced AI-powered patient segmentation for population health management, utilizing multiple clustering algorithms to group patients based on chronic conditions, risk factors, and care needs. Enables targeted interventions, optimized resource allocation, and personalized care delivery with 40-60% improvement in care management efficiency.
 
+### 🩺 [Prediabetes Risk Prediction Models](prediabetes_risk/)
+AI-powered early detection system for prediabetes risk assessment, utilizing ensemble machine learning models to identify high-risk individuals before diabetes onset. Achieves 87% AUC performance with optimized population screening strategies, generating $2.3M net benefit per 10,000 patients through prevention-focused care and targeted lifestyle interventions.
+
 ## Topics Covered
 
 - **Predictive Analytics** in healthcare settings
@@ -56,5 +59,13 @@ Advanced AI-powered patient segmentation for population health management, utili
 - **Care Management** and intervention strategies
 - **Population Analytics** and segment profiling
 - **Clustering Algorithms** for healthcare applications
+- **Prediabetes Risk Assessment** and early detection
+- **Diabetes Prevention Programs** and lifestyle interventions
+- **Preventive Care Models** and screening optimization
+- **Population Health Screening** and cost-effectiveness analysis
+- **Risk Stratification** and clinical decision support
+- **Early Intervention Strategies** and health economics
+- **Screening Strategy Optimization** and resource allocation
+- **Prevention-Focused Healthcare** and outcome improvement
 - **Business Impact** and ROI analysis in healthcare AI
 - **Implementation Strategies** for healthcare organizations
