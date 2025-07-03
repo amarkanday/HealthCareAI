@@ -27,6 +27,9 @@ Advanced analytics for evaluating healthcare provider performance using Data Env
 ### 🎯 [Clinical Outcome Prediction Models](clinical_outcomes/)
 Comprehensive machine learning framework for predicting clinical outcomes and treatment responses, enabling precision medicine approaches through personalized treatment selection, survival analysis, and biomarker-guided therapeutic decisions that improve patient outcomes by 15-30%.
 
+### 🧬 [Patient Segmentation Models](patient_segmentation/)
+Advanced AI-powered patient segmentation for population health management, utilizing multiple clustering algorithms to group patients based on chronic conditions, risk factors, and care needs. Enables targeted interventions, optimized resource allocation, and personalized care delivery with 40-60% improvement in care management efficiency.
+
 ## Topics Covered
 
 - **Predictive Analytics** in healthcare settings
@@ -47,6 +50,11 @@ Comprehensive machine learning framework for predicting clinical outcomes and tr
 - **Biomarker-Guided Therapy** and molecular medicine
 - **Treatment Optimization** and clinical decision support
 - **Patient Stratification** and risk assessment
+- **Patient Segmentation** and population health management
+- **Chronic Condition Clustering** and care coordination
+- **Risk-Based Patient Grouping** and resource optimization
 - **Care Management** and intervention strategies
+- **Population Analytics** and segment profiling
+- **Clustering Algorithms** for healthcare applications
 - **Business Impact** and ROI analysis in healthcare AI
 - **Implementation Strategies** for healthcare organizations
