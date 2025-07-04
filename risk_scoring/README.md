@@ -5,6 +5,7 @@ This directory contains comprehensive analysis and implementation of machine lea
 ## Case Studies and Analysis
 
 - **[Member Risk Scoring Analysis](member_risk_scoring_analysis.md)** - Complete data science analysis report including model development, performance evaluation, and business impact assessment
+- **[Risk Scoring Notebook](risk_scoring_analysis.ipynb)** - Professional Jupyter notebook with step-by-step implementation and visualizations
 - **[Risk Scoring Model (Python)](risk_scoring_model.py)** - Production-ready implementation of the gradient boosting risk scoring model
 - **[Requirements](requirements.txt)** - Python dependencies for running the implementation
 
@@ -47,6 +48,11 @@ pip install -r requirements.txt
 2. Run the risk scoring analysis:
 ```bash
 python risk_scoring_model.py
+```
+
+3. For interactive analysis, open the Jupyter notebook:
+```bash
+jupyter notebook risk_scoring_analysis.ipynb
 ```
 
 The implementation will:
