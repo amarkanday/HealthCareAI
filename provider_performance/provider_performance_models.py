@@ -1,7 +1,7 @@
 """
 Healthcare Provider Performance Models
 
-⚠️ DISCLAIMER: Synthetic data for educational purposes only.
+DISCLAIMER: Synthetic data for educational purposes only.
 No real provider data or proprietary information is used.
 """
 
@@ -160,14 +160,14 @@ def create_visualizations(df: pd.DataFrame, dea_scores: np.ndarray, analysis_res
 def main():
     """Main execution function"""
     
-    print("\n🏥 Healthcare Provider Performance Analysis")
+    print("\nHealthcare Provider Performance Analysis")
     print("="*50)
     
     # Generate data
     generator = ProviderDataGenerator(n_providers=75)
     df = generator.generate_data()
     
-    print(f"✅ Dataset created with {len(df)} providers")
+    print(f"Dataset created with {len(df)} providers")
     
     # DEA Analysis
     dea = DataEnvelopmentAnalysis()
@@ -179,7 +179,7 @@ def main():
     dea_scores = dea.calculate_efficiency(inputs, outputs)
     df['dea_efficiency'] = dea_scores
     
-    print(f"✅ DEA analysis complete - Mean efficiency: {np.mean(dea_scores):.3f}")
+    print(f"DEA analysis complete - Mean efficiency: {np.mean(dea_scores):.3f}")
     
     # Performance analysis
     analyzer = PerformanceAnalysis()
@@ -190,31 +190,31 @@ def main():
     create_visualizations(df, dea_scores, {})
     
     # Results summary
-    print("\n📊 Analysis Results:")
+    print("\nAnalysis Results:")
     print(f"   Average quality score: {df['quality_score'].mean():.1f}")
     print(f"   Average DEA efficiency: {np.mean(dea_scores):.3f}")
     
-    print(f"\n🏫 Teaching vs Non-Teaching:")
+    print(f"\nTeaching vs Non-Teaching:")
     comp = char_results['teaching_comparison']
     print(f"   Teaching hospitals: {comp['teaching']:.1f}")
     print(f"   Non-teaching hospitals: {comp['non_teaching']:.1f}")
     print(f"   Difference: {comp['difference']:.1f}")
     
-    print(f"\n🔗 Top Performance Drivers:")
+    print(f"\nTop Performance Drivers:")
     for driver, corr in driver_results['top_drivers'][:3]:
         print(f"   {driver}: {corr:.3f}")
     
-    print(f"\n📈 Performance by Size:")
+    print(f"\nPerformance by Size:")
     for size, score in char_results['size_analysis'].items():
         print(f"   {size}: {score:.1f}")
     
     # Improvement opportunities
     low_performers = df[df['quality_score'] < df['quality_score'].quantile(0.25)]
-    print(f"\n🎯 Improvement Opportunities:")
+    print(f"\nImprovement Opportunities:")
     print(f"   {len(low_performers)} providers in bottom quartile")
     print(f"   Average gap: {df['quality_score'].quantile(0.75) - df['quality_score'].quantile(0.25):.1f} points")
     
-    print("\n🎉 Analysis Complete!")
+    print("\nAnalysis Complete!")
     print("Demonstrated: DEA efficiency analysis, performance benchmarking")
     print("All data synthetic for educational purposes.")
 
