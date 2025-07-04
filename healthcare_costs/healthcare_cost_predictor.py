@@ -79,7 +79,7 @@ class HealthcareCostPredictor:
         sequences = []
         targets = []
         
-        for patient_id in patient_ids.unique():
+        for patient_id in np.unique(patient_ids):
             patient_data = data[patient_ids == patient_id]
             patient_target = target[patient_ids == patient_id]
             
