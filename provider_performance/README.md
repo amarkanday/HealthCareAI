@@ -29,16 +29,18 @@ This case study demonstrates advanced analytical models for evaluating healthcar
 
 ```
 provider_performance/
-├── README.md                                    # This file
-├── healthcare_provider_performance_analysis.md  # Comprehensive analysis document
+├── README.md                                    # This comprehensive guide
+├── provider_performance_analysis.ipynb          # Interactive Jupyter notebook  
 ├── provider_performance_models.py               # Python implementation
+├── healthcare_provider_performance_analysis.md  # Detailed analysis document
 └── requirements.txt                            # Dependencies
 ```
 
 ### 📁 File Descriptions
 
-- **`healthcare_provider_performance_analysis.md`**: 25,000+ word comprehensive analysis covering theoretical foundations, methodologies, real-world applications, and implementation frameworks
+- **`provider_performance_analysis.ipynb`**: **NEW!** Interactive Jupyter notebook with step-by-step analysis, comprehensive visualizations, and educational content
 - **`provider_performance_models.py`**: Complete Python implementation demonstrating DEA, regression analysis, and performance visualization
+- **`healthcare_provider_performance_analysis.md`**: 25,000+ word comprehensive analysis covering theoretical foundations, methodologies, real-world applications, and implementation frameworks
 - **`requirements.txt`**: Required Python packages for running the implementation
 
 ---
@@ -74,8 +76,7 @@ pip install -r requirements.txt
 
 ### Installation
 ```bash
-# Clone the repository
-git clone <repository-url>
+# Navigate to the provider_performance directory
 cd provider_performance
 
 # Install dependencies
@@ -83,10 +84,25 @@ pip install -r requirements.txt
 ```
 
 ### Running the Analysis
+
+#### Option 1: Interactive Jupyter Notebook (Recommended)
 ```bash
-# Execute the main performance analysis
+# Start Jupyter notebook
+jupyter notebook
+
+# Open provider_performance_analysis.ipynb in your browser
+# Follow the step-by-step analysis with explanations
+```
+
+#### Option 2: Python Script
+```bash
+# Execute the main performance analysis script
 python provider_performance_models.py
 ```
+
+### Which Option to Choose?
+- **Jupyter Notebook**: Best for learning, exploring, and understanding the methodology
+- **Python Script**: Best for quick execution and automated analysis
 
 ### Expected Output
 The script will generate:
@@ -95,6 +111,54 @@ The script will generate:
 - Performance driver analysis
 - Comprehensive visualizations
 - Summary insights and improvement opportunities
+
+---
+
+## 📓 Jupyter Notebook Features
+
+### Interactive Learning Experience
+The **`provider_performance_analysis.ipynb`** notebook provides a comprehensive, step-by-step educational journey through healthcare provider performance analysis:
+
+#### 🎯 **Section 1: Data Generation**
+- **Interactive synthetic data creation** with 75 healthcare providers
+- **Real-time parameter adjustment** for different scenarios
+- **Comprehensive data exploration** with provider characteristics
+
+#### 🔬 **Section 2: Data Envelopment Analysis**
+- **Visual DEA implementation** with detailed explanations
+- **Efficiency score calculations** with mathematical foundations
+- **Performance driver identification** with correlation analysis
+
+#### 📊 **Section 3: Advanced Analytics**
+- **Quality score modeling** with weighted composite metrics
+- **Performance benchmarking** across provider characteristics
+- **Improvement opportunity analysis** with specific recommendations
+
+#### 📈 **Section 4: Comprehensive Visualizations**
+- **9-panel dashboard** with interactive charts
+- **Correlation heatmaps** for relationship analysis
+- **Distribution plots** for performance metrics
+- **Benchmarking comparisons** across provider types
+
+#### 💡 **Section 5: Business Insights**
+- **Executive summary** with key findings
+- **Strategic recommendations** for healthcare organizations
+- **ROI calculations** and business impact analysis
+- **Real-world application guidance**
+
+### Educational Benefits
+✅ **Step-by-step methodology** with detailed explanations
+✅ **Interactive code execution** with immediate results
+✅ **Comprehensive visualizations** for better understanding
+✅ **Business context** for each analytical technique
+✅ **Practical recommendations** for implementation
+
+### Perfect for:
+- **Healthcare Data Scientists** learning provider performance analysis
+- **Quality Improvement Professionals** implementing measurement systems
+- **Healthcare Executives** understanding performance metrics
+- **Academic Researchers** studying healthcare analytics
+- **Students** learning applied healthcare data science
 
 ---
 
