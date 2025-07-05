@@ -1,4 +1,4 @@
-# Hospital Readmission Prediction & Prevention Models
+# Hospital Readmission Prediction & Prevention Models with Fairness & Bias Mitigation
 
 ## ⚠️ Data Disclaimer
 
@@ -16,6 +16,13 @@ Hospital readmissions represent one of healthcare's most persistent and costly c
 - **Expected cost savings:** $12.5M annually for a typical 400-bed hospital
 - **Implementation ROI:** 400%+ after initial technology investment
 - **Quality improvements:** 35% improvement in patient satisfaction scores
+
+### 🎯 Fairness & Bias Mitigation Features
+- **Comprehensive fairness analysis** across demographic groups
+- **Bias detection and quantification** using multiple metrics
+- **Fairness-aware model training** with bias mitigation techniques
+- **Equitable performance monitoring** across sensitive attributes
+- **Ethical AI practices** ensuring healthcare equity
 
 ---
 
