@@ -29,7 +29,7 @@ class MedicalCodeFeatureEngineer:
         # CPT procedure categories
         self.cpt_categories = {
             'evaluation_management': range(99201, 99500),
-            'anesthesia': range(00100, 01999),
+            'anesthesia': range(100, 1999),
             'surgery': range(10000, 69999),
             'radiology': range(70000, 79999),
             'pathology': range(80000, 89999),
@@ -318,11 +318,17 @@ class MedicalCodeFeatureEngineer:
         ) / 3
         
         # 6. High-risk indicators
+        # Ensure boolean columns are properly typed
+        combined['has_diabetes'] = combined['has_diabetes'].astype(bool)
+        combined['has_heart_disease'] = combined['has_heart_disease'].astype(bool)
+        combined['has_high_cost_procedure'] = combined['has_high_cost_procedure'].astype(bool)
+        combined['extreme_polypharmacy'] = combined['extreme_polypharmacy'].astype(bool)
+        
         combined['high_risk_member'] = (
             (combined['has_diabetes'] & combined['has_heart_disease']) |
             (combined['comorbidity_count'] >= 3) |
-            (combined['has_high_cost_procedure'] == 1) |
-            (combined['extreme_polypharmacy'] == 1)
+            (combined['has_high_cost_procedure']) |
+            (combined['extreme_polypharmacy'])
         ).astype(int)
         
         # 7. Cost driver score
