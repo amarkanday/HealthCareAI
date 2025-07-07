@@ -36,4 +36,35 @@ requests>=2.28.0
 
 # Utilities
 tqdm>=4.64.0
-python-dateutil>=2.8.0 
+python-dateutil>=2.8.0
+
+# Core LangChain packages
+langchain==0.1.0
+langchain-community==0.0.10
+langchain-core==0.1.10
+
+# Google AI packages
+google-generativeai==0.3.2
+google-palm==0.1.0
+
+# Vector store and embeddings
+chromadb==0.4.22
+sentence-transformers==2.2.2
+
+# Data processing
+pandas==2.1.4
+numpy==1.24.3
+
+# Text processing
+nltk==3.8.1
+spacy==3.7.2
+
+# Utilities
+python-dotenv==1.0.0
+requests==2.31.0
+tiktoken==0.5.2
+
+# Optional: For advanced features
+faiss-cpu==1.7.4
+pinecone-client==2.2.4
+weaviate-client==3.25.3 
