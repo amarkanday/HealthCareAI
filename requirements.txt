@@ -1,0 +1,265 @@
+# HealthCareAI - Consolidated Requirements
+# ⚠️ DISCLAIMER: This uses synthetic data for educational purposes only
+# 
+# This file consolidates requirements from all healthcare AI case studies:
+# - Healthcare Cost Prediction (Deep Learning)
+# - Risk Scoring Models (Insurance Analytics)  
+# - LLM and RAG Systems (Clinical Decision Support)
+# - Provider Performance Models (DEA/SFA Analysis)
+# - Clinical Outcome Prediction (Treatment Response)
+# - Clinical Decision Support Systems (Drug Interactions)
+# - Patient Segmentation Models (Population Health)
+# - Prediabetes Risk Prediction (Early Detection)
+
+# =============================================================================
+# CORE DATA SCIENCE LIBRARIES
+# =============================================================================
+
+# Essential data manipulation and analysis
+pandas>=1.5.0
+numpy>=1.24.3
+scipy>=1.9.0
+
+# Machine learning foundation
+scikit-learn>=1.3.0
+
+# Statistical analysis
+statsmodels>=0.13.0
+
+# Data visualization
+matplotlib>=3.7.2
+seaborn>=0.12.2
+plotly>=5.17.0
+
+# =============================================================================
+# ADVANCED MACHINE LEARNING
+# =============================================================================
+
+# Deep learning frameworks
+tensorflow>=2.8.0
+torch>=2.0.0
+
+# Gradient boosting
+xgboost>=1.6.0
+lightgbm>=3.3.0
+catboost>=1.1.0
+
+# Model interpretability
+shap>=0.41.0
+lime>=0.2.0
+eli5>=0.13.0
+
+# Clustering and dimensionality reduction
+umap-learn>=0.5.0
+hdbscan>=0.8.0
+
+# Imbalanced learning
+imbalanced-learn>=0.9.0
+
+# =============================================================================
+# HEALTHCARE & MEDICAL LIBRARIES
+# =============================================================================
+
+# Survival analysis
+lifelines>=0.27.0
+scikit-survival>=0.19.0
+pysurvival>=0.1.0
+
+# Medical informatics and standards
+fhir.resources>=6.0.0
+hl7apy>=1.3.0
+medspacy>=1.0.0
+scispacy>=0.5.3
+
+# Medical coding and standards
+icd10-cm>=0.0.4
+snomed-ct-loader>=0.1.0
+
+# Healthcare analytics
+pymetheus>=0.1.0
+pymedeus>=0.1.0
+clinical-ml>=0.2.0
+clinical-risk-models>=0.1.0
+healthcare-analytics>=0.2.0
+
+# =============================================================================
+# NATURAL LANGUAGE PROCESSING & LLM
+# =============================================================================
+
+# Core NLP libraries
+nltk>=3.8.1
+spacy>=3.7.0
+
+# Large Language Models
+openai>=1.3.0
+transformers>=4.35.0
+sentence-transformers>=2.2.2
+langchain>=0.1.0
+langchain-openai>=0.0.5
+
+# Vector databases and embeddings
+chromadb>=0.4.18
+faiss-cpu>=1.7.4
+pinecone-client>=2.2.4
+
+# =============================================================================
+# WEB FRAMEWORKS & APIs
+# =============================================================================
+
+# API frameworks
+fastapi>=0.104.1
+flask>=2.2.0
+uvicorn>=0.24.0
+
+# Web visualization
+dash>=2.0.0
+
+# HTTP clients
+requests>=2.31.0
+aiohttp>=3.9.0
+
+# =============================================================================
+# DATABASE & STORAGE
+# =============================================================================
+
+# SQL databases
+sqlalchemy>=2.0.23
+psycopg2-binary>=2.9.7
+
+# NoSQL databases
+pymongo>=3.12.0
+redis>=5.0.1
+
+# Knowledge graphs
+rdflib>=6.0.0
+owlready2>=0.36.0
+
+# =============================================================================
+# DATA PROCESSING & UTILITIES
+# =============================================================================
+
+# Data processing
+feature-engine>=1.5.0
+preprocessing>=0.1.13
+
+# Model persistence
+joblib>=1.3.2
+pickle-mixin>=1.0.2
+
+# Progress bars and utilities
+tqdm>=4.64.0
+python-dateutil>=2.8.0
+pytz>=2022.1
+
+# Performance optimization
+numba>=0.58.1
+
+# =============================================================================
+# SECURITY & COMPLIANCE
+# =============================================================================
+
+# Cryptography and security
+cryptography>=41.0.7
+python-jose>=3.3.0
+passlib>=1.7.4
+
+# =============================================================================
+# CONFIGURATION & VALIDATION
+# =============================================================================
+
+# Configuration management
+pydantic>=2.5.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+configparser>=5.3.0
+
+# Data validation
+cerberus>=1.3.4
+marshmallow>=3.17.0
+typing-extensions>=3.10.0
+
+# =============================================================================
+# MONITORING & LOGGING
+# =============================================================================
+
+# Experiment tracking
+mlflow>=1.28.0
+wandb>=0.16.0
+tensorboard>=2.10.0
+
+# Logging
+loguru>=0.7.2
+
+# Monitoring
+prometheus-client>=0.19.0
+
+# =============================================================================
+# VISUALIZATION & REPORTING
+# =============================================================================
+
+# Advanced plotting
+scikit-plot>=0.3.7
+yellowbrick>=1.4.0
+
+# Jupyter ecosystem
+jupyter>=1.0.0
+ipykernel>=6.15.0
+ipywidgets>=7.6.0
+
+# =============================================================================
+# CLOUD SERVICES (OPTIONAL)
+# =============================================================================
+
+# AWS services
+boto3>=1.24.0
+
+# Azure services
+azure-storage-blob>=12.12.0
+
+# Google Cloud services
+google-cloud-storage>=2.5.0
+
+# =============================================================================
+# DEVELOPMENT & TESTING
+# =============================================================================
+
+# Testing frameworks
+pytest>=7.4.3
+pytest-cov>=4.0.0
+pytest-asyncio>=0.21.1
+
+# Code quality
+black>=23.11.0
+flake8>=6.1.0
+mypy>=1.7.0
+
+# Documentation
+sphinx>=4.0.0
+sphinx-rtd-theme>=0.5.0
+
+# =============================================================================
+# INSTALLATION NOTES
+# =============================================================================
+#
+# Quick Installation:
+#   pip install -r requirements.txt
+#
+# Virtual Environment Setup:
+#   python -m venv healthcare_ai_env
+#   source healthcare_ai_env/bin/activate  # Linux/Mac
+#   # or healthcare_ai_env\Scripts\activate  # Windows
+#   pip install -r requirements.txt
+#
+# Specific Case Study Installation:
+#   # For specific projects, you can install subsets:
+#   pip install pandas numpy scikit-learn matplotlib seaborn  # Core only
+#   pip install tensorflow torch  # Add deep learning
+#   pip install transformers langchain openai  # Add LLM capabilities
+#
+# Production Considerations:
+#   - Pin to specific versions for production deployments
+#   - Consider using pip-tools for dependency management
+#   - Regularly update packages for security patches
+#   - Use docker for consistent deployment environments
+#
+# ============================================================================= 
