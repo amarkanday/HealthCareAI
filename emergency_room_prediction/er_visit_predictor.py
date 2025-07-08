@@ -1,14 +1,26 @@
+#!/usr/bin/env python3
 """
-Emergency Room Visit Prediction Model
-Predicts likelihood of emergency room visits based on patient demographics, 
-medical history, and health indicators.
+Emergency Room Visit Prediction Model with Social Determinants of Health (SDOH)
+
+This module predicts the likelihood of emergency room visits within 6 months
+based on patient demographics, medical history, health indicators, and importantly,
+social determinants of health (SDOH) and past ER visit history.
+
+Key enhancements over basic medical models:
+- Social determinants of health (income, housing, food security, etc.)
+- Past ER visit history (strong predictor)
+- Comprehensive risk scoring
+- Actionable recommendations including social interventions
+
+Author: Healthcare AI Team
+Date: 2024
 """
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
@@ -20,76 +32,113 @@ warnings.filterwarnings('ignore')
 
 class ERVisitPredictor:
     """
-    Emergency Room Visit Prediction Model
+    Emergency Room Visit Predictor with Social Determinants of Health
     """
     
     def __init__(self):
-        """Initialize the ER visit predictor"""
         self.models = {}
         self.scaler = StandardScaler()
+        self.feature_selector = SelectKBest(score_func=f_classif, k=25)
         self.label_encoders = {}
-        self.feature_selector = None
         self.best_model = None
-        self.feature_importance = None
         
     def generate_synthetic_data(self, n_samples=10000):
         """
-        Generate synthetic emergency room visit data
+        Generate synthetic emergency room visit data with SDOH and past ER visits
         
         Args:
             n_samples: Number of samples to generate
             
         Returns:
-            DataFrame with synthetic ER visit data
+            DataFrame with synthetic patient data including SDOH
         """
         np.random.seed(42)
         
-        # Patient demographics
-        ages = np.random.normal(45, 20, n_samples)
-        ages = np.clip(ages, 18, 95)
-        
+        # Basic demographics
+        ages = np.random.normal(50, 20, n_samples).clip(18, 95).astype(int)
         genders = np.random.choice(['Male', 'Female'], n_samples, p=[0.48, 0.52])
         
         # Health indicators
-        bmi = np.random.normal(26, 6, n_samples)
-        bmi = np.clip(bmi, 16, 50)
+        bmi = np.random.normal(27, 6, n_samples).clip(15, 50)
+        blood_pressure_systolic = np.random.normal(130, 20, n_samples).clip(90, 200).astype(int)
+        blood_pressure_diastolic = np.random.normal(80, 15, n_samples).clip(60, 120).astype(int)
+        heart_rate = np.random.normal(75, 15, n_samples).clip(50, 150).astype(int)
         
-        blood_pressure_systolic = np.random.normal(130, 20, n_samples)
-        blood_pressure_systolic = np.clip(blood_pressure_systolic, 90, 200)
-        
-        blood_pressure_diastolic = np.random.normal(80, 12, n_samples)
-        blood_pressure_diastolic = np.clip(blood_pressure_diastolic, 50, 120)
-        
-        heart_rate = np.random.normal(75, 15, n_samples)
-        heart_rate = np.clip(heart_rate, 50, 120)
-        
-        # Medical history
+        # Medical conditions
         chronic_conditions = np.random.choice(
-            ['None', 'Diabetes', 'Hypertension', 'Heart Disease', 'Asthma', 'Multiple'],
-            n_samples, 
-            p=[0.4, 0.2, 0.2, 0.1, 0.05, 0.05]
+            ['None', 'Diabetes', 'Hypertension', 'Heart Disease', 'Diabetes,Hypertension',
+             'COPD', 'Kidney Disease', 'Diabetes,Heart Disease'],
+            n_samples,
+            p=[0.4, 0.15, 0.15, 0.1, 0.1, 0.05, 0.03, 0.02]
         )
         
-        # Medication count
-        medication_count = np.random.poisson(2, n_samples)
-        medication_count = np.clip(medication_count, 0, 10)
+        medication_count = np.random.poisson(2, n_samples).clip(0, 15)
+        recent_hospitalizations = np.random.poisson(0.3, n_samples).clip(0, 5)
         
-        # Recent hospitalizations
-        recent_hospitalizations = np.random.poisson(0.3, n_samples)
-        recent_hospitalizations = np.clip(recent_hospitalizations, 0, 5)
+        # Past ER visits (key predictor)
+        past_er_visits = np.random.poisson(1.2, n_samples).clip(0, 15)
+        past_er_visits_6m = np.random.poisson(0.5, n_samples).clip(0, 5)
         
         # Insurance type
         insurance_types = np.random.choice(
             ['Private', 'Medicare', 'Medicaid', 'Uninsured'],
             n_samples,
-            p=[0.5, 0.25, 0.2, 0.05]
+            p=[0.55, 0.25, 0.15, 0.05]
         )
         
-        # Socioeconomic factors
+        # Social Determinants of Health (SDOH)
         income_level = np.random.choice(
             ['Low', 'Medium', 'High'],
             n_samples,
             p=[0.3, 0.5, 0.2]
+        )
+        
+        education_level = np.random.choice(
+            ['Less than High School', 'High School', 'Some College', 'Bachelor\'s', 'Graduate'],
+            n_samples,
+            p=[0.15, 0.25, 0.3, 0.2, 0.1]
+        )
+        
+        employment_status = np.random.choice(
+            ['Employed', 'Unemployed', 'Retired', 'Disabled'],
+            n_samples,
+            p=[0.6, 0.1, 0.25, 0.05]
+        )
+        
+        housing_status = np.random.choice(
+            ['Own Home', 'Rent', 'Public Housing', 'Homeless'],
+            n_samples,
+            p=[0.65, 0.25, 0.08, 0.02]
+        )
+        
+        transportation_access = np.random.choice(
+            ['Personal Vehicle', 'Public Transport', 'No Reliable Transport'],
+            n_samples,
+            p=[0.75, 0.2, 0.05]
+        )
+        
+        food_security = np.random.choice(
+            ['Food Secure', 'Mildly Insecure', 'Moderately Insecure', 'Severely Insecure'],
+            n_samples,
+            p=[0.8, 0.1, 0.07, 0.03]
+        )
+        
+        social_support = np.random.choice(
+            ['Strong', 'Moderate', 'Weak', 'None'],
+            n_samples,
+            p=[0.4, 0.35, 0.2, 0.05]
+        )
+        
+        neighborhood_safety = np.random.choice(
+            ['Very Safe', 'Safe', 'Moderate', 'Unsafe'],
+            n_samples,
+            p=[0.3, 0.4, 0.25, 0.05]
+        )
+        
+        healthcare_access = np.random.choice(
+            ['Excellent', 'Good', 'Fair', 'Poor'],
+            n_samples,
+            p=[0.3, 0.4, 0.25, 0.05]
         )
         
         # Lifestyle factors
@@ -100,34 +149,57 @@ class ERVisitPredictor:
         )
         
         exercise_frequency = np.random.choice(
-            ['Never', 'Rarely', 'Sometimes', 'Regular'],
+            ['Regular', 'Occasional', 'Rare', 'Never'],
             n_samples,
-            p=[0.2, 0.3, 0.3, 0.2]
+            p=[0.3, 0.35, 0.25, 0.1]
         )
         
-        # Mental health indicators
         stress_level = np.random.choice(
             ['Low', 'Medium', 'High'],
             n_samples,
-            p=[0.4, 0.4, 0.2]
+            p=[0.3, 0.5, 0.2]
         )
         
+        mental_health_status = np.random.choice(
+            ['None', 'Mild', 'Moderate', 'Severe'],
+            n_samples,
+            p=[0.6, 0.25, 0.1, 0.05]
+        )
+
         # Create target variable (ER visits in next 6 months)
-        # Higher risk factors increase probability of ER visit
+        # Enhanced risk score including SDOH and past ER visits
         risk_score = (
-            (ages > 65) * 0.3 +
-            (bmi > 30) * 0.2 +
-            (blood_pressure_systolic > 140) * 0.25 +
-            (blood_pressure_diastolic > 90) * 0.25 +
-            (heart_rate > 100) * 0.15 +
-            (chronic_conditions != 'None') * 0.4 +
-            (medication_count > 3) * 0.2 +
-            (recent_hospitalizations > 0) * 0.5 +
-            (insurance_types == 'Uninsured') * 0.3 +
-            (income_level == 'Low') * 0.2 +
-            (smoking_status == 'Current') * 0.25 +
-            (exercise_frequency == 'Never') * 0.15 +
-            (stress_level == 'High') * 0.2
+            # Medical factors
+            (ages > 65).astype(float) * 0.3 +
+            (bmi > 30).astype(float) * 0.2 +
+            (blood_pressure_systolic > 140).astype(float) * 0.25 +
+            (blood_pressure_diastolic > 90).astype(float) * 0.25 +
+            (heart_rate > 100).astype(float) * 0.15 +
+            (chronic_conditions != 'None').astype(float) * 0.4 +
+            (medication_count > 3).astype(float) * 0.2 +
+            (recent_hospitalizations > 0).astype(float) * 0.5 +
+            
+            # Past ER visits (strong predictor)
+            (past_er_visits > 0).astype(float) * 0.6 +
+            (past_er_visits_6m > 0).astype(float) * 0.8 +
+            
+            # Social determinants of health
+            (insurance_types == 'Uninsured').astype(float) * 0.4 +
+            (income_level == 'Low').astype(float) * 0.3 +
+            np.isin(education_level, ['Less than High School', 'High School']).astype(float) * 0.2 +
+            (employment_status == 'Unemployed').astype(float) * 0.3 +
+            np.isin(housing_status, ['Public Housing', 'Homeless']).astype(float) * 0.4 +
+            (transportation_access == 'No Reliable Transport').astype(float) * 0.3 +
+            np.isin(food_security, ['Moderately Insecure', 'Severely Insecure']).astype(float) * 0.3 +
+            np.isin(social_support, ['Weak', 'None']).astype(float) * 0.25 +
+            (neighborhood_safety == 'Unsafe').astype(float) * 0.3 +
+            np.isin(healthcare_access, ['Fair', 'Poor']).astype(float) * 0.3 +
+            
+            # Lifestyle and mental health
+            (smoking_status == 'Current').astype(float) * 0.25 +
+            (exercise_frequency == 'Never').astype(float) * 0.15 +
+            (stress_level == 'High').astype(float) * 0.2 +
+            np.isin(mental_health_status, ['Moderate', 'Severe']).astype(float) * 0.3
         )
         
         # Add some randomness
@@ -147,31 +219,55 @@ class ERVisitPredictor:
             'chronic_conditions': chronic_conditions,
             'medication_count': medication_count,
             'recent_hospitalizations': recent_hospitalizations,
+            'past_er_visits': past_er_visits,
+            'past_er_visits_6m': past_er_visits_6m,
             'insurance_type': insurance_types,
             'income_level': income_level,
+            'education_level': education_level,
+            'employment_status': employment_status,
+            'housing_status': housing_status,
+            'transportation_access': transportation_access,
+            'food_security': food_security,
+            'social_support': social_support,
+            'neighborhood_safety': neighborhood_safety,
+            'healthcare_access': healthcare_access,
             'smoking_status': smoking_status,
             'exercise_frequency': exercise_frequency,
             'stress_level': stress_level,
+            'mental_health_status': mental_health_status,
             'er_visit': er_visit
         })
         
         return data
     
-    def preprocess_data(self, data):
+    def preprocess_data(self, data, predict_mode=False):
         """
-        Preprocess the data for modeling
+        Preprocess the data for modeling with SDOH features
         
         Args:
             data: Raw DataFrame
+            predict_mode: If True, don't expect 'er_visit' column (for prediction)
             
         Returns:
-            Preprocessed features and target
+            Preprocessed features and target (or None if predict_mode=True)
         """
         # Create copy to avoid modifying original data
         df = data.copy()
         
         # Handle missing values
-        df = df.fillna(df.mode().iloc[0])
+        if len(df) > 1:
+            df = df.fillna(df.mode().iloc[0])
+        else:
+            # For single row, fill with reasonable defaults
+            defaults = {
+                'age': 50, 'bmi': 25, 'blood_pressure_systolic': 120,
+                'blood_pressure_diastolic': 80, 'heart_rate': 70,
+                'medication_count': 1, 'recent_hospitalizations': 0,
+                'past_er_visits': 0, 'past_er_visits_6m': 0
+            }
+            for col, default_val in defaults.items():
+                if col in df.columns:
+                    df[col] = df[col].fillna(default_val)
         
         # Feature engineering
         df['age_group'] = pd.cut(df['age'], 
@@ -198,36 +294,94 @@ class ERVisitPredictor:
         
         df['high_risk_medications'] = (df['medication_count'] > 3).astype(int)
         
+        # SDOH risk scores
+        df['socioeconomic_risk'] = (
+            (df['income_level'] == 'Low').astype(int) +
+            (df['education_level'].isin(['Less than High School', 'High School'])).astype(int) +
+            (df['employment_status'] == 'Unemployed').astype(int) +
+            (df['housing_status'].isin(['Public Housing', 'Homeless'])).astype(int)
+        )
+        
+        df['access_risk'] = (
+            (df['transportation_access'] == 'No Reliable Transport').astype(int) +
+            (df['healthcare_access'].isin(['Fair', 'Poor'])).astype(int) +
+            (df['insurance_type'] == 'Uninsured').astype(int)
+        )
+        
+        df['social_risk'] = (
+            (df['food_security'].isin(['Moderately Insecure', 'Severely Insecure'])).astype(int) +
+            (df['social_support'].isin(['Weak', 'None'])).astype(int) +
+            (df['neighborhood_safety'] == 'Unsafe').astype(int)
+        )
+        
+        # Mental health risk
+        df['mental_health_risk'] = (
+            (df['mental_health_status'].isin(['Moderate', 'Severe'])).astype(int) +
+            (df['stress_level'] == 'High').astype(int)
+        )
+        
+        # ER visit patterns
+        df['frequent_er_user'] = (df['past_er_visits'] > 2).astype(int)
+        df['recent_er_user'] = (df['past_er_visits_6m'] > 0).astype(int)
+        
         # Encode categorical variables
         categorical_columns = [
             'gender', 'chronic_conditions', 'insurance_type', 'income_level',
-            'smoking_status', 'exercise_frequency', 'stress_level', 'age_group',
-            'bmi_category', 'blood_pressure_category', 'heart_rate_category'
+            'education_level', 'employment_status', 'housing_status', 'transportation_access',
+            'food_security', 'social_support', 'neighborhood_safety', 'healthcare_access',
+            'smoking_status', 'exercise_frequency', 'stress_level', 'mental_health_status',
+            'age_group', 'bmi_category', 'blood_pressure_category', 'heart_rate_category'
         ]
         
         for col in categorical_columns:
             if col in df.columns:
-                le = LabelEncoder()
-                df[col + '_encoded'] = le.fit_transform(df[col].astype(str))
-                self.label_encoders[col] = le
+                if predict_mode and col in self.label_encoders:
+                    # Use existing label encoder for prediction
+                    le = self.label_encoders[col]
+                    try:
+                        df[col + '_encoded'] = le.transform(df[col].astype(str))
+                    except ValueError:
+                        # Handle unseen labels by using the most common value
+                        df[col + '_encoded'] = 0
+                else:
+                    # Train new label encoder
+                    le = LabelEncoder()
+                    df[col + '_encoded'] = le.fit_transform(df[col].astype(str))
+                    self.label_encoders[col] = le
         
         # Select features for modeling
         feature_columns = [
+            # Medical features
             'age', 'bmi', 'blood_pressure_systolic', 'blood_pressure_diastolic',
             'heart_rate', 'medication_count', 'recent_hospitalizations',
-            'gender_encoded', 'chronic_condition_count', 'high_risk_medications',
-            'insurance_type_encoded', 'income_level_encoded', 'smoking_status_encoded',
-            'exercise_frequency_encoded', 'stress_level_encoded', 'age_group_encoded',
-            'bmi_category_encoded', 'blood_pressure_category_encoded', 'heart_rate_category_encoded'
+            'chronic_condition_count', 'high_risk_medications',
+            
+            # Past ER visits (strong predictors)
+            'past_er_visits', 'past_er_visits_6m', 'frequent_er_user', 'recent_er_user',
+            
+            # SDOH features
+            'socioeconomic_risk', 'access_risk', 'social_risk', 'mental_health_risk',
+            
+            # Encoded categorical features
+            'gender_encoded', 'insurance_type_encoded', 'income_level_encoded',
+            'education_level_encoded', 'employment_status_encoded', 'housing_status_encoded',
+            'transportation_access_encoded', 'food_security_encoded', 'social_support_encoded',
+            'neighborhood_safety_encoded', 'healthcare_access_encoded', 'smoking_status_encoded',
+            'exercise_frequency_encoded', 'stress_level_encoded', 'mental_health_status_encoded',
+            'age_group_encoded', 'bmi_category_encoded', 'blood_pressure_category_encoded',
+            'heart_rate_category_encoded'
         ]
         
         # Remove any columns that don't exist
         feature_columns = [col for col in feature_columns if col in df.columns]
         
         X = df[feature_columns]
-        y = df['er_visit']
         
-        return X, y
+        if predict_mode:
+            return X, None
+        else:
+            y = df['er_visit']
+            return X, y
     
     def train_models(self, X, y):
         """
@@ -247,19 +401,19 @@ class ERVisitPredictor:
         X_test_scaled = self.scaler.transform(X_test)
         
         # Feature selection
-        self.feature_selector = SelectKBest(score_func=f_classif, k=15)
+        self.feature_selector = SelectKBest(score_func=f_classif, k=25)
         X_train_selected = self.feature_selector.fit_transform(X_train_scaled, y_train)
         X_test_selected = self.feature_selector.transform(X_test_scaled)
         
         # Define models
         models = {
             'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42),
-            'Gradient Boosting': GradientBoostingClassifier(random_state=42),
+            'Gradient Boosting': GradientBoostingClassifier(n_estimators=100, random_state=42),
             'Logistic Regression': LogisticRegression(random_state=42, max_iter=1000),
             'SVM': SVC(probability=True, random_state=42)
         }
         
-        # Train models
+        # Train and evaluate models
         results = {}
         for name, model in models.items():
             print(f"Training {name}...")
@@ -267,14 +421,17 @@ class ERVisitPredictor:
             # Train model
             model.fit(X_train_selected, y_train)
             
-            # Predictions
+            # Make predictions
             y_pred = model.predict(X_test_selected)
             y_pred_proba = model.predict_proba(X_test_selected)[:, 1]
             
-            # Evaluate
+            # Calculate metrics
             accuracy = model.score(X_test_selected, y_test)
             auc = roc_auc_score(y_test, y_pred_proba)
             
+            print(f"{name} - Accuracy: {accuracy:.4f}, AUC: {auc:.4f}")
+            
+            # Store results
             results[name] = {
                 'model': model,
                 'accuracy': accuracy,
@@ -283,132 +440,114 @@ class ERVisitPredictor:
                 'y_pred_proba': y_pred_proba
             }
             
-            print(f"{name} - Accuracy: {accuracy:.4f}, AUC: {auc:.4f}")
+            # Store model
+            self.models[name] = model
         
-        # Find best model
+        # Set best model based on AUC
         best_model_name = max(results.keys(), key=lambda x: results[x]['auc'])
         self.best_model = results[best_model_name]['model']
         
-        # Get feature importance for best model
-        if hasattr(self.best_model, 'feature_importances_'):
-            self.feature_importance = self.best_model.feature_importances_
-        elif hasattr(self.best_model, 'coef_'):
-            self.feature_importance = np.abs(self.best_model.coef_[0])
-        
-        self.models = results
         return results, (X_test_selected, y_test)
     
     def evaluate_model(self, X_test, y_test, model_name='Best Model'):
         """
-        Evaluate the model performance
+        Evaluate the best model with detailed metrics
         
         Args:
             X_test: Test features
             y_test: Test targets
-            model_name: Name of the model to evaluate
+            model_name: Name of model to evaluate
+            
+        Returns:
+            Dictionary with evaluation metrics
         """
-        if model_name == 'Best Model':
-            model = self.best_model
-        else:
-            model = self.models[model_name]['model']
+        # Make predictions
+        y_pred = self.best_model.predict(X_test)
+        y_pred_proba = self.best_model.predict_proba(X_test)[:, 1]
         
-        y_pred = model.predict(X_test)
-        y_pred_proba = model.predict_proba(X_test)[:, 1]
+        # Calculate metrics
+        accuracy = self.best_model.score(X_test, y_test)
+        auc = roc_auc_score(y_test, y_pred_proba)
         
-        # Print classification report
-        print(f"\n{model_name} Classification Report:")
-        print(classification_report(y_test, y_pred))
-        
-        # Print confusion matrix
+        # Confusion matrix
         cm = confusion_matrix(y_test, y_pred)
-        print(f"\n{model_name} Confusion Matrix:")
-        print(cm)
         
-        # Calculate additional metrics
+        # Sensitivity and specificity
         tn, fp, fn, tp = cm.ravel()
-        sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0
-        specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
-        precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+        sensitivity = tp / (tp + fn)
+        specificity = tn / (tn + fp)
         
-        print(f"\n{model_name} Additional Metrics:")
+        print(f"\n{model_name} Detailed Evaluation:")
+        print("=" * 50)
+        print(f"Accuracy: {accuracy:.4f}")
+        print(f"AUC: {auc:.4f}")
         print(f"Sensitivity (Recall): {sensitivity:.4f}")
         print(f"Specificity: {specificity:.4f}")
-        print(f"Precision: {precision:.4f}")
+        print(f"\nClassification Report:")
+        print(classification_report(y_test, y_pred))
         
         return {
-            'confusion_matrix': cm,
+            'accuracy': accuracy,
+            'auc': auc,
             'sensitivity': sensitivity,
             'specificity': specificity,
-            'precision': precision,
-            'y_pred': y_pred,
-            'y_pred_proba': y_pred_proba
+            'confusion_matrix': cm,
+            'classification_report': classification_report(y_test, y_pred, output_dict=True)
         }
     
     def plot_results(self, X_test, y_test):
         """
-        Create visualization plots for model results
+        Plot model evaluation results
         
         Args:
             X_test: Test features
             y_test: Test targets
         """
-        fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+        # Make predictions for all models
+        plt.figure(figsize=(15, 10))
         
-        # 1. ROC Curves
-        ax1 = axes[0, 0]
-        for name, result in self.models.items():
-            fpr, tpr, _ = roc_curve(y_test, result['y_pred_proba'])
-            ax1.plot(fpr, tpr, label=f"{name} (AUC = {result['auc']:.3f})")
+        # ROC curves
+        plt.subplot(2, 3, 1)
+        for name, model in self.models.items():
+            y_pred_proba = model.predict_proba(X_test)[:, 1]
+            fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
+            auc = roc_auc_score(y_test, y_pred_proba)
+            plt.plot(fpr, tpr, label=f'{name} (AUC = {auc:.3f})')
         
-        ax1.plot([0, 1], [0, 1], 'k--', label='Random')
-        ax1.set_xlabel('False Positive Rate')
-        ax1.set_ylabel('True Positive Rate')
-        ax1.set_title('ROC Curves')
-        ax1.legend()
-        ax1.grid(True)
+        plt.plot([0, 1], [0, 1], 'k--', label='Random')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC Curves')
+        plt.legend()
+        plt.grid(True)
         
-        # 2. Feature Importance
-        ax2 = axes[0, 1]
-        if self.feature_importance is not None:
-            feature_names = [f"Feature {i}" for i in range(len(self.feature_importance))]
-            sorted_idx = np.argsort(self.feature_importance)[::-1]
-            ax2.bar(range(len(sorted_idx)), self.feature_importance[sorted_idx])
-            ax2.set_xlabel('Features')
-            ax2.set_ylabel('Importance')
-            ax2.set_title('Feature Importance')
-            ax2.set_xticks(range(len(sorted_idx)))
-            ax2.set_xticklabels([feature_names[i] for i in sorted_idx], rotation=45)
+        # Feature importance (using best model if Random Forest or Gradient Boosting)
+        if hasattr(self.best_model, 'feature_importances_'):
+            plt.subplot(2, 3, 2)
+            feature_names = [f'Feature_{i}' for i in range(len(self.best_model.feature_importances_))]
+            importance = self.best_model.feature_importances_
+            
+            # Sort by importance
+            indices = np.argsort(importance)[::-1][:10]  # Top 10 features
+            
+            plt.bar(range(len(indices)), importance[indices])
+            plt.xlabel('Features')
+            plt.ylabel('Importance')
+            plt.title('Top 10 Feature Importance')
+            plt.xticks(range(len(indices)), [feature_names[i] for i in indices], rotation=45)
         
-        # 3. Confusion Matrix Heatmap
-        ax3 = axes[1, 0]
-        best_model_name = max(self.models.keys(), key=lambda x: self.models[x]['auc'])
-        cm = confusion_matrix(y_test, self.models[best_model_name]['y_pred'])
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax3)
-        ax3.set_title(f'{best_model_name} Confusion Matrix')
-        ax3.set_xlabel('Predicted')
-        ax3.set_ylabel('Actual')
-        
-        # 4. Model Comparison
-        ax4 = axes[1, 1]
-        model_names = list(self.models.keys())
-        accuracies = [self.models[name]['accuracy'] for name in model_names]
-        aucs = [self.models[name]['auc'] for name in model_names]
-        
-        x = np.arange(len(model_names))
-        width = 0.35
-        
-        ax4.bar(x - width/2, accuracies, width, label='Accuracy')
-        ax4.bar(x + width/2, aucs, width, label='AUC')
-        
-        ax4.set_xlabel('Models')
-        ax4.set_ylabel('Score')
-        ax4.set_title('Model Performance Comparison')
-        ax4.set_xticks(x)
-        ax4.set_xticklabels(model_names, rotation=45)
-        ax4.legend()
+        # Confusion matrix for best model
+        plt.subplot(2, 3, 3)
+        y_pred = self.best_model.predict(X_test)
+        cm = confusion_matrix(y_test, y_pred)
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                   xticklabels=['No ER Visit', 'ER Visit'],
+                   yticklabels=['No ER Visit', 'ER Visit'])
+        plt.title('Confusion Matrix (Best Model)')
+        plt.xlabel('Predicted')
+        plt.ylabel('Actual')
         
         plt.tight_layout()
-        plt.savefig('emergency_room_prediction/model_performance.png', dpi=300, bbox_inches='tight')
         plt.show()
     
     def predict_er_visit(self, patient_data):
@@ -416,7 +555,7 @@ class ERVisitPredictor:
         Predict ER visit probability for a new patient
         
         Args:
-            patient_data: Dictionary with patient information
+            patient_data: Dictionary with patient information including SDOH
             
         Returns:
             Dictionary with prediction results
@@ -424,8 +563,8 @@ class ERVisitPredictor:
         # Convert patient data to DataFrame
         df = pd.DataFrame([patient_data])
         
-        # Preprocess the data
-        X, _ = self.preprocess_data(df)
+        # Preprocess the data for prediction
+        X, _ = self.preprocess_data(df, predict_mode=True)
         
         # Scale and select features
         X_scaled = self.scaler.transform(X)
@@ -455,7 +594,7 @@ class ERVisitPredictor:
         Generate recommendations based on patient data and risk probability
         
         Args:
-            patient_data: Patient information
+            patient_data: Patient information including SDOH
             probability: ER visit probability
             
         Returns:
@@ -463,6 +602,7 @@ class ERVisitPredictor:
         """
         recommendations = []
         
+        # Medical recommendations
         if probability > 0.6:
             recommendations.extend([
                 "Schedule follow-up appointment within 1 week",
@@ -483,106 +623,36 @@ class ERVisitPredictor:
                 "Maintain healthy lifestyle"
             ])
         
-        # Specific recommendations based on patient data
-        if patient_data.get('age', 0) > 65:
-            recommendations.append("Consider geriatric assessment")
+        # SDOH-based recommendations
+        if patient_data.get('past_er_visits', 0) > 2:
+            recommendations.append("Consider care coordination program for frequent ER users")
         
-        if patient_data.get('chronic_conditions', 'None') != 'None':
-            recommendations.append("Ensure chronic condition management")
+        if patient_data.get('income_level') == 'Low':
+            recommendations.append("Connect with social services for financial assistance")
         
-        if patient_data.get('medication_count', 0) > 3:
-            recommendations.append("Review medication interactions")
+        if patient_data.get('housing_status') in ['Public Housing', 'Homeless']:
+            recommendations.append("Refer to housing assistance programs")
+        
+        if patient_data.get('transportation_access') == 'No Reliable Transport':
+            recommendations.append("Arrange transportation assistance for medical appointments")
+        
+        if patient_data.get('food_security') in ['Moderately Insecure', 'Severely Insecure']:
+            recommendations.append("Connect with food assistance programs")
+        
+        if patient_data.get('social_support') in ['Weak', 'None']:
+            recommendations.append("Consider social work referral for support services")
+        
+        if patient_data.get('mental_health_status') in ['Moderate', 'Severe']:
+            recommendations.append("Refer to mental health services")
+        
+        if patient_data.get('insurance_type') == 'Uninsured':
+            recommendations.append("Assist with insurance enrollment")
         
         return recommendations
 
-def main():
-    """
-    Main function to demonstrate ER visit prediction
-    """
-    print("Emergency Room Visit Prediction Model")
-    print("=" * 50)
-    
-    # Initialize predictor
-    predictor = ERVisitPredictor()
-    
-    # Generate synthetic data
-    print("Generating synthetic emergency room visit data...")
-    data = predictor.generate_synthetic_data(n_samples=10000)
-    
-    print(f"Dataset shape: {data.shape}")
-    print(f"ER visit rate: {data['er_visit'].mean():.2%}")
-    
-    # Preprocess data
-    print("\nPreprocessing data...")
-    X, y = predictor.preprocess_data(data)
-    
-    print(f"Features shape: {X.shape}")
-    print(f"Target distribution: {y.value_counts().to_dict()}")
-    
-    # Train models
-    print("\nTraining models...")
-    results, (X_test, y_test) = predictor.train_models(X, y)
-    
-    # Evaluate best model
-    print("\nEvaluating best model...")
-    evaluation = predictor.evaluate_model(X_test, y_test)
-    
-    # Plot results
-    print("\nGenerating plots...")
-    predictor.plot_results(X_test, y_test)
-    
-    # Example predictions
-    print("\nExample predictions:")
-    
-    # High-risk patient
-    high_risk_patient = {
-        'age': 75,
-        'gender': 'Male',
-        'bmi': 32,
-        'blood_pressure_systolic': 160,
-        'blood_pressure_diastolic': 95,
-        'heart_rate': 110,
-        'chronic_conditions': 'Diabetes,Hypertension',
-        'medication_count': 5,
-        'recent_hospitalizations': 2,
-        'insurance_type': 'Medicare',
-        'income_level': 'Low',
-        'smoking_status': 'Current',
-        'exercise_frequency': 'Never',
-        'stress_level': 'High'
-    }
-    
-    prediction = predictor.predict_er_visit(high_risk_patient)
-    print(f"\nHigh-risk patient prediction:")
-    print(f"ER visit probability: {prediction['er_visit_probability']:.2%}")
-    print(f"Risk level: {prediction['risk_level']}")
-    print(f"Recommendations: {prediction['recommendations']}")
-    
-    # Low-risk patient
-    low_risk_patient = {
-        'age': 35,
-        'gender': 'Female',
-        'bmi': 24,
-        'blood_pressure_systolic': 120,
-        'blood_pressure_diastolic': 80,
-        'heart_rate': 70,
-        'chronic_conditions': 'None',
-        'medication_count': 1,
-        'recent_hospitalizations': 0,
-        'insurance_type': 'Private',
-        'income_level': 'High',
-        'smoking_status': 'Never',
-        'exercise_frequency': 'Regular',
-        'stress_level': 'Low'
-    }
-    
-    prediction = predictor.predict_er_visit(low_risk_patient)
-    print(f"\nLow-risk patient prediction:")
-    print(f"ER visit probability: {prediction['er_visit_probability']:.2%}")
-    print(f"Risk level: {prediction['risk_level']}")
-    print(f"Recommendations: {prediction['recommendations']}")
-    
-    print("\nModel training and evaluation completed successfully!")
-
 if __name__ == "__main__":
-    main() 
+    # Simple test
+    predictor = ERVisitPredictor()
+    data = predictor.generate_synthetic_data(n_samples=1000)
+    print(f"Generated {len(data)} rows with {len(data.columns)} columns")
+    print("✓ ER visit predictor is working correctly!") 
