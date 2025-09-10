@@ -356,4 +356,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 **Version**: 1.0.0  
 **Last Updated**: December 2024  
 **Author**: Ashish Markanday  
-**Contact**: [Your Contact Information] 

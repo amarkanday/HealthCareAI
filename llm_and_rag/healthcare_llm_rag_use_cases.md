@@ -2,7 +2,7 @@
 
 **Document Version:** 1.0  
 **Date:** December 2024  
-**Author:** Healthcare AI Team  
+**Author:** Ashish Markanday  
 **Project:** LLM and RAG Applications in Healthcare  
 
 ---
