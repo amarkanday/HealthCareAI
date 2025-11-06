@@ -282,15 +282,90 @@ class PatientAdherencePredictor:
         
         feature_df = df.copy()
         
+        # Calculate adherence_risk_score if it doesn't exist
+        if 'adherence_risk_score' not in feature_df.columns:
+            def _calculate_adherence_risk(row):
+                risk = 0.0
+                # Age factors
+                if row['age'] > 75:
+                    risk += 0.15
+                elif row['age'] < 30:
+                    risk += 0.10
+                # Income factors
+                if row['income_level'] == 'Low':
+                    risk += 0.20
+                elif row['income_level'] == 'Medium':
+                    risk += 0.10
+                # Education factors
+                if row['education_level'] == 'High School':
+                    risk += 0.15
+                elif row['education_level'] == 'Some College':
+                    risk += 0.08
+                # Medication complexity
+                if row['num_medications'] > 5:
+                    risk += 0.20
+                elif row['num_medications'] > 3:
+                    risk += 0.10
+                # Side effects
+                if row['side_effects_severity'] == 'Severe':
+                    risk += 0.25
+                elif row['side_effects_severity'] == 'Moderate':
+                    risk += 0.15
+                elif row['side_effects_severity'] == 'Mild':
+                    risk += 0.05
+                # Support factors
+                if not row['caregiver_support']:
+                    risk += 0.15
+                # Previous adherence
+                risk += (1 - row['previous_adherence']) * 0.30
+                # Transportation
+                if row['transportation_access'] == 'Poor':
+                    risk += 0.20
+                elif row['transportation_access'] == 'Fair':
+                    risk += 0.10
+                # Housing stability
+                if row['housing_stability'] == 'Unstable':
+                    risk += 0.25
+                elif row['housing_stability'] == 'Somewhat Stable':
+                    risk += 0.10
+                # Mental health
+                if row['depression_anxiety']:
+                    risk += 0.15
+                if row['cognitive_impairment']:
+                    risk += 0.20
+                # Insurance factors
+                if row['insurance_type'] == 'Cash':
+                    risk += 0.25
+                elif row['insurance_type'] == 'Medicaid':
+                    risk += 0.10
+                return min(1.0, risk)
+            
+            feature_df['adherence_risk_score'] = feature_df.apply(_calculate_adherence_risk, axis=1)
+        
         # Encode categorical variables
         categorical_cols = ['gender', 'specialty_condition', 'insurance_type', 
                           'income_level', 'education_level', 'medication_frequency',
                           'side_effects_severity', 'transportation_access', 'housing_stability']
         
         for col in categorical_cols:
-            le = LabelEncoder()
-            feature_df[f'{col}_encoded'] = le.fit_transform(feature_df[col])
-            self.label_encoders[col] = le
+            if col not in self.label_encoders:
+                le = LabelEncoder()
+                feature_df[f'{col}_encoded'] = le.fit_transform(feature_df[col])
+                self.label_encoders[col] = le
+            else:
+                # Use existing encoder, handling unseen values
+                le = self.label_encoders[col]
+                try:
+                    feature_df[f'{col}_encoded'] = le.transform(feature_df[col])
+                except ValueError:
+                    # Handle unseen categories by adding them
+                    unique_values = set(feature_df[col].unique())
+                    known_values = set(le.classes_)
+                    if unique_values - known_values:
+                        # Re-fit encoder with all values
+                        le = LabelEncoder()
+                        feature_df[f'{col}_encoded'] = le.fit_transform(feature_df[col])
+                        self.label_encoders[col] = le
         
         # Create binary features
         feature_df['caregiver_support_binary'] = feature_df['caregiver_support'].astype(int)
@@ -402,24 +477,39 @@ class PatientAdherencePredictor:
             print(f"   AUC: {auc_score:.3f}")
             print(f"   CV AUC: {cv_scores.mean():.3f} ± {cv_scores.std():.3f}")
         
-        # Create ensemble model
-        ensemble_models = [(name, result['model']) for name, result in results.items()]
-        ensemble = VotingClassifier(estimators=ensemble_models, voting='soft')
+        # Create ensemble model - use a custom wrapper that handles scaled/unscaled models
+        class EnsembleWrapper:
+            def __init__(self, models_dict, scaler, scaled_models):
+                self.models_dict = models_dict
+                self.scaler = scaler
+                self.scaled_models = scaled_models
+                
+            def predict_proba(self, X):
+                """Predict probabilities by averaging all model predictions"""
+                probas = []
+                for name, model in self.models_dict.items():
+                    if name in self.scaled_models:
+                        X_scaled = self.scaler.transform(X)
+                        proba = model.predict_proba(X_scaled)
+                    else:
+                        proba = model.predict_proba(X)
+                    probas.append(proba)
+                return np.mean(probas, axis=0)
+            
+            def predict(self, X):
+                """Predict classes based on averaged probabilities"""
+                proba = self.predict_proba(X)
+                return (proba[:, 1] >= 0.5).astype(int)
         
-        # Train ensemble
-        if any(name in ['logistic_regression', 'svm'] for name, _ in ensemble_models):
-            # Mix of scaled and unscaled models - use average probabilities
-            ensemble_pred_proba = np.mean([
-                result['y_pred_proba'] for result in results.values()
-            ], axis=0)
-            ensemble_pred = (ensemble_pred_proba >= 0.5).astype(int)
-        else:
-            ensemble.fit(X_train, y_train)
-            ensemble_pred = ensemble.predict(X_test)
-            ensemble_pred_proba = ensemble.predict_proba(X_test)[:, 1]
+        scaled_model_names = ['logistic_regression', 'svm']
+        ensemble_models_dict = {name: result['model'] for name, result in results.items()}
+        ensemble = EnsembleWrapper(ensemble_models_dict, self.scaler, scaled_model_names)
         
+        # Evaluate ensemble
+        ensemble_pred_proba = ensemble.predict_proba(X_test)
+        ensemble_pred = ensemble.predict(X_test)
         ensemble_accuracy = accuracy_score(y_test, ensemble_pred)
-        ensemble_auc = roc_auc_score(y_test, ensemble_pred_proba)
+        ensemble_auc = roc_auc_score(y_test, ensemble_pred_proba[:, 1])
         
         results['ensemble'] = {
             'model': ensemble,
@@ -427,7 +517,7 @@ class PatientAdherencePredictor:
             'auc_score': ensemble_auc,
             'y_test': y_test,
             'y_pred': ensemble_pred,
-            'y_pred_proba': ensemble_pred_proba
+            'y_pred_proba': ensemble_pred_proba[:, 1]
         }
         
         print(f"🎯 Ensemble model AUC: {ensemble_auc:.3f}")

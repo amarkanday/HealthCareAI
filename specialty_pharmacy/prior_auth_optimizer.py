@@ -476,24 +476,39 @@ class PriorAuthorizationPredictor:
             print(f"   AUC: {auc_score:.3f}")
             print(f"   CV AUC: {cv_scores.mean():.3f} ± {cv_scores.std():.3f}")
         
-        # Create ensemble model
-        ensemble_models = [(name, result['model']) for name, result in results.items()]
-        ensemble = VotingClassifier(estimators=ensemble_models, voting='soft')
+        # Create ensemble model - use a custom wrapper that handles scaled/unscaled models
+        class EnsembleWrapper:
+            def __init__(self, models_dict, scaler, scaled_models):
+                self.models_dict = models_dict
+                self.scaler = scaler
+                self.scaled_models = scaled_models
+                
+            def predict_proba(self, X):
+                """Predict probabilities by averaging all model predictions"""
+                probas = []
+                for name, model in self.models_dict.items():
+                    if name in self.scaled_models:
+                        X_scaled = self.scaler.transform(X)
+                        proba = model.predict_proba(X_scaled)
+                    else:
+                        proba = model.predict_proba(X)
+                    probas.append(proba)
+                return np.mean(probas, axis=0)
+            
+            def predict(self, X):
+                """Predict classes based on averaged probabilities"""
+                proba = self.predict_proba(X)
+                return (proba[:, 1] >= 0.5).astype(int)
         
-        # Train ensemble
-        if any(name == 'logistic_regression' for name, _ in ensemble_models):
-            # Mix of scaled and unscaled models - use average probabilities
-            ensemble_pred_proba = np.mean([
-                result['y_pred_proba'] for result in results.values()
-            ], axis=0)
-            ensemble_pred = (ensemble_pred_proba >= 0.5).astype(int)
-        else:
-            ensemble.fit(X_train, y_train)
-            ensemble_pred = ensemble.predict(X_test)
-            ensemble_pred_proba = ensemble.predict_proba(X_test)[:, 1]
+        scaled_model_names = ['logistic_regression']
+        ensemble_models_dict = {name: result['model'] for name, result in results.items()}
+        ensemble = EnsembleWrapper(ensemble_models_dict, self.scaler, scaled_model_names)
         
+        # Evaluate ensemble
+        ensemble_pred_proba = ensemble.predict_proba(X_test)
+        ensemble_pred = ensemble.predict(X_test)
         ensemble_accuracy = accuracy_score(y_test, ensemble_pred)
-        ensemble_auc = roc_auc_score(y_test, ensemble_pred_proba)
+        ensemble_auc = roc_auc_score(y_test, ensemble_pred_proba[:, 1])
         
         results['ensemble'] = {
             'model': ensemble,
@@ -501,7 +516,7 @@ class PriorAuthorizationPredictor:
             'auc_score': ensemble_auc,
             'y_test': y_test,
             'y_pred': ensemble_pred,
-            'y_pred_proba': ensemble_pred_proba
+            'y_pred_proba': ensemble_pred_proba[:, 1]
         }
         
         print(f"🎯 Ensemble model AUC: {ensemble_auc:.3f}")
