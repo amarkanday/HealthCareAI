@@ -22,7 +22,8 @@ selection_bias/
 ├── requirements.txt                             # Python dependencies
 ├── docs/
 │   ├── 01_presentation_experimentation_selection_bias.md  # 30-minute slide deck
-│   └── 02_markdown_explainer_selection_bias.md            # Technical deep dive
+│   ├── 02_markdown_explainer_selection_bias.md            # Technical deep dive
+│   └── 03_causal_inference_decision_framework.md          # Method selection guide
 ├── src/
 │   ├── data_simulation.py                       # Generate synthetic patient data
 │   └── analysis_naive_vs_adjusted.py            # Causal inference methods
