@@ -1,0 +1,33 @@
+# Selection Bias Simulation - Python Dependencies
+# For Claritas Rx causal inference analysis
+
+# Core data science libraries
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+
+# Machine learning
+scikit-learn>=1.3.0
+
+# Causal inference (optional but recommended)
+econml>=0.14.0
+causalml>=0.14.0
+dowhy>=0.9.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Jupyter
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# Statistical analysis
+statsmodels>=0.14.0
+
+# Utilities
+tqdm>=4.65.0
+
+# Testing (optional)
+pytest>=7.4.0
+
