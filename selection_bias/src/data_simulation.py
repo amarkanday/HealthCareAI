@@ -213,7 +213,7 @@ def assign_treatment(df: pd.DataFrame,
         'Low': FRM_INTERVENTION_PROBS['low'],
         'Medium': FRM_INTERVENTION_PROBS['medium'],
         'High': FRM_INTERVENTION_PROBS['high']
-    })
+    }).astype(float)
     
     # Adjustments based on other factors
     
@@ -223,26 +223,27 @@ def assign_treatment(df: pd.DataFrame,
         'Medicare': 1.0,
         'Medicaid': 0.7,
         'PatientPay': 0.8
-    })
+    }).astype(float)
     
     # Site type: Academic centers have better FRM relationships
     site_multiplier = df['site_type'].map({
         'Academic': 1.1,
         'Community': 1.0,
         'Specialty': 1.05
-    })
+    }).astype(float)
     
     # Channel: Hub referrals get more attention
     channel_multiplier = df['channel'].map({
         'Hub': 1.1,
         'NonHub': 0.9
-    })
+    }).astype(float)
     
     # Days since script: Recent scripts get priority
     days_multiplier = 1.0 + 0.2 * (1 - df['days_since_script'] / 30)
     
-    # Combine all factors
-    intervention_prob = base_probs * payer_multiplier * site_multiplier * channel_multiplier * days_multiplier
+    # Combine all factors (fill any NaN with 1.0 multiplier)
+    intervention_prob = (base_probs * payer_multiplier.fillna(1.0) * 
+                        site_multiplier.fillna(1.0) * channel_multiplier.fillna(1.0) * days_multiplier)
     
     # Clip to [0, 1]
     intervention_prob = np.clip(intervention_prob, 0, 1)
@@ -295,7 +296,7 @@ def generate_outcomes(df: pd.DataFrame,
     baseline_prob = compute_baseline_success_probability(df)
     
     # Treatment effect (depends on risk band)
-    treatment_effect = df['risk_band'].map(TRUE_TREATMENT_EFFECTS)
+    treatment_effect = df['risk_band'].map(TRUE_TREATMENT_EFFECTS).astype(float).fillna(0)
     
     # Success probability with treatment
     success_prob_treated = np.clip(baseline_prob + treatment_effect, 0, 1)
@@ -358,27 +359,27 @@ def compute_baseline_success_probability(df: pd.DataFrame) -> np.ndarray:
         'Medicare': 0.01,
         'Medicaid': -0.02,
         'PatientPay': 0.00
-    })
+    }).astype(float)
     
     # Site: Academic centers slightly better
     site_adjustment = df['site_type'].map({
         'Academic': 0.02,
         'Community': 0.00,
         'Specialty': 0.01
-    })
+    }).astype(float)
     
     # Channel: Hub referrals slightly better
     channel_adjustment = df['channel'].map({
         'Hub': 0.02,
         'NonHub': 0.00
-    })
+    }).astype(float)
     
     # Age: Younger patients slightly better adherence
     age_adjustment = -0.001 * (df['age'] - 55)  # Centered at 55
     age_adjustment = np.clip(age_adjustment, -0.05, 0.05)
     
-    # Combine
-    baseline = baseline + payer_adjustment + site_adjustment + channel_adjustment + age_adjustment
+    # Combine (fill any NaN with 0 adjustment)
+    baseline = baseline + payer_adjustment.fillna(0) + site_adjustment.fillna(0) + channel_adjustment.fillna(0) + age_adjustment
     
     # Clip to [0, 1]
     baseline = np.clip(baseline, 0, 1)
